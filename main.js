@@ -1,7 +1,8 @@
 import {defs, tiny} from './examples/common.js';
 
+
 const {
-    Vector, Vector3, vec, vec3, vec4, color, hex_color, Shader, Matrix, Mat4, Light, Shape, Material, Scene,
+    Vector, Vector3, vec, vec3, vec4, color, hex_color, Shader, Matrix, Mat4, Light, Shape, Texture, Material, Scene,
 } = tiny;
 
 export class MarshmallowMadness extends Scene {
@@ -14,12 +15,14 @@ export class MarshmallowMadness extends Scene {
             box: new defs.Cube(),
             torus: new defs.Torus(15, 15),
             marshmallow: new defs.Rounded_Capped_Cylinder(10, 10),
+            table: new defs.Square()
         };
 
         // *** Materials
         this.materials = {
             test: new Material(new defs.Phong_Shader(),
-                {ambient: .4, diffusivity: .6, color: hex_color("#ffffff")}),
+                {ambient: .5, diffusivity: 1, color: hex_color("#ffffff")}),
+            table_material: new Material(new defs.Textured_Phong(1), {ambient: .9, texture: new Texture("assets/wood.jpg")}),
         }
 
 
@@ -55,5 +58,12 @@ export class MarshmallowMadness extends Scene {
 
         let marshmallow_scale = Mat4.identity().times(Mat4.scale(1, 1, 1.9));
         this.shapes.marshmallow.draw(context, program_state, marshmallow_scale, this.materials.test);
+
+
+        let table_scale = Mat4.identity().times(
+            Mat4.translation(0, -10, 0)).times(
+            Mat4.rotation(1.57079633, 1, 0, 0)).times(
+            Mat4.scale(20, 40, 1));
+        this.shapes.table.draw(context, program_state, table_scale, this.materials.table_material);
     }
 }
