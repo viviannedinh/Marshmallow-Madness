@@ -11,6 +11,7 @@ export class MarshmallowMadness extends Scene {
 
         // At the beginning of our program, load one of each of these shape definitions onto the GPU.
         this.shapes = {
+            box: new defs.Cube(),
             torus: new defs.Torus(15, 15),
         };
 
@@ -39,12 +40,15 @@ export class MarshmallowMadness extends Scene {
 
         const t = program_state.animation_time / 1000, dt = program_state.animation_delta_time / 1000;
 
-        const light_position = vec4(0, 0, 0, 1);
+        const light_position = vec4(10, 10, 10, 1);
         // The parameters of the Light are: position, color, size
-        program_state.lights = [new Light(light_position, color(1, 1, 1, 1), 10)];
+        program_state.lights = [new Light(light_position, color(1, 1, 1, 1), 100)];
 
         let model_transform = Mat4.identity();
 
-        this.shapes.torus.draw(context, program_state, model_transform, this.materials.test);
+
+        this.shapes.box.draw(context, program_state, Mat4.scale(10, .1, .1), this.materials.test.override({color: color(1, 0, 0, 1)}));
+        this.shapes.box.draw(context, program_state, Mat4.scale(.1, 10, .1), this.materials.test.override({color: color(0, 1, 0, 1)}));
+        this.shapes.box.draw(context, program_state, Mat4.scale(.1, .1, 10), this.materials.test.override({color: color(0, 0, 1, 1)}));
     }
 }
