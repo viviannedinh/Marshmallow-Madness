@@ -12,6 +12,7 @@ export class MarshmallowMadness extends Scene {
         // At the beginning of our program, load one of each of these shape definitions onto the GPU.
         this.shapes = {
             torus: new defs.Torus(15, 15),
+            cup: new defs.Capped_Cylinder(30, 30)
         };
 
         // *** Materials
@@ -43,8 +44,16 @@ export class MarshmallowMadness extends Scene {
         // The parameters of the Light are: position, color, size
         program_state.lights = [new Light(light_position, color(1, 1, 1, 1), 10)];
 
-        let model_transform = Mat4.identity();
+        let cups_transform = Mat4.identity();
 
-        this.shapes.torus.draw(context, program_state, model_transform, this.materials.test);
+        cups_transform = cups_transform.times(Mat4.scale(3, 3, 7));
+        
+        for (let i = 1; i < 5; i++) {
+            for (let j = 0; j < i; j++) {
+                this.shapes.cup.draw(context, program_state, cups_transform, this.materials.test);
+                cups_transform = cups_transform.times(Mat4.translation(1.8, 0, 0));
+            }
+            cups_transform = cups_transform.times(Mat4.translation(-1.8 * (i + 0.5), 1.8, 0));
+        }
     }
 }
