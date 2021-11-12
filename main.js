@@ -56,9 +56,8 @@ export class MarshmallowMadness extends Scene {
             Mat4.scale(20, 40, 1));
         this.shapes.table.draw(context, program_state, table_scale, this.materials.table_material);
 
-        //let cups_transform = Mat4.identity();
-        let cups_transform = Mat4.identity().times(
-            Mat4.translation(0, -6.5, -20)).times(Mat4.rotation(1.57079633, -1, 0, 0));
+        //cup arrangements
+        let cups_transform = Mat4.identity().times(Mat4.translation(0, -6.5, -20)).times(Mat4.rotation(1.57079633, -1, 0, 0));
 
         cups_transform = cups_transform.times(Mat4.scale(3, 3, 7));
         
@@ -70,11 +69,13 @@ export class MarshmallowMadness extends Scene {
             cups_transform = cups_transform.times(Mat4.translation(-1.8 * (i + 0.5), 1.8, 0));
         }
 
+        //axis 
         let axis_transform = Mat4.identity().times(Mat4.translation(0, 0, 38));
         this.shapes.box.draw(context, program_state, axis_transform.times(Mat4.scale(10, .1, .1)), this.materials.test.override({color: color(1, 0, 0, 1)}));
         this.shapes.box.draw(context, program_state, axis_transform.times(Mat4.scale(.1, 10, .1)), this.materials.test.override({color: color(0, 1, 0, 1)}));
         this.shapes.box.draw(context, program_state, axis_transform.times(Mat4.scale(.1, .1, 10)), this.materials.test.override({color: color(0, 0, 1, 1)}));
-
+       
+        //marshmallow
         let marshmallow_scale = Mat4.identity().times(Mat4.scale(1, 1, 1.9)).times(Mat4.translation(0, 0, 20));
         this.shapes.marshmallow.draw(context, program_state, marshmallow_scale, this.materials.test);
 
