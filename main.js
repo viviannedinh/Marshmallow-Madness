@@ -14,7 +14,7 @@ export class MarshmallowMadness extends Scene {
         this.shapes = {
             box: new defs.Cube(),
             torus: new defs.Torus(15, 15),
-            cup: new defs.Capped_Cylinder(30, 30)
+            cup: new defs.Capped_Cylinder(30, 30),
             marshmallow: new defs.Rounded_Capped_Cylinder(10, 10),
             table: new defs.Square()
         };
@@ -27,7 +27,7 @@ export class MarshmallowMadness extends Scene {
         }
 
 
-        this.initial_camera_location = Mat4.look_at(vec3(0, 10, 20), vec3(0, 0, 0), vec3(0, 1, 0));
+        this.initial_camera_location = Mat4.look_at(vec3(0, 10, 50), vec3(0, -10, 0), vec3(0, 1, 0));
     }
 
     make_control_panel() {};
@@ -50,7 +50,15 @@ export class MarshmallowMadness extends Scene {
         // The parameters of the Light are: position, color, size
         program_state.lights = [new Light(light_position, color(1, 1, 1, 1), 100)];
 
-        let cups_transform = Mat4.identity();
+        let table_scale = Mat4.identity().times(
+            Mat4.translation(0, -10, 0)).times(
+            Mat4.rotation(1.57079633, 1, 0, 0)).times(
+            Mat4.scale(20, 40, 1));
+        this.shapes.table.draw(context, program_state, table_scale, this.materials.table_material);
+
+        //let cups_transform = Mat4.identity();
+        let cups_transform = Mat4.identity().times(
+            Mat4.translation(0, -6.5, -20)).times(Mat4.rotation(1.57079633, -1, 0, 0));
 
         cups_transform = cups_transform.times(Mat4.scale(3, 3, 7));
         
@@ -62,19 +70,14 @@ export class MarshmallowMadness extends Scene {
             cups_transform = cups_transform.times(Mat4.translation(-1.8 * (i + 0.5), 1.8, 0));
         }
 
+        let axis_transform = Mat4.identity().times(Mat4.translation(0, 0, 38));
+        this.shapes.box.draw(context, program_state, axis_transform.times(Mat4.scale(10, .1, .1)), this.materials.test.override({color: color(1, 0, 0, 1)}));
+        this.shapes.box.draw(context, program_state, axis_transform.times(Mat4.scale(.1, 10, .1)), this.materials.test.override({color: color(0, 1, 0, 1)}));
+        this.shapes.box.draw(context, program_state, axis_transform.times(Mat4.scale(.1, .1, 10)), this.materials.test.override({color: color(0, 0, 1, 1)}));
 
-        this.shapes.box.draw(context, program_state, Mat4.scale(10, .1, .1), this.materials.test.override({color: color(1, 0, 0, 1)}));
-        this.shapes.box.draw(context, program_state, Mat4.scale(.1, 10, .1), this.materials.test.override({color: color(0, 1, 0, 1)}));
-        this.shapes.box.draw(context, program_state, Mat4.scale(.1, .1, 10), this.materials.test.override({color: color(0, 0, 1, 1)}));
-
-        let marshmallow_scale = Mat4.identity().times(Mat4.scale(1, 1, 1.9));
+        let marshmallow_scale = Mat4.identity().times(Mat4.scale(1, 1, 1.9)).times(Mat4.translation(0, 0, 20));
         this.shapes.marshmallow.draw(context, program_state, marshmallow_scale, this.materials.test);
 
 
-        let table_scale = Mat4.identity().times(
-            Mat4.translation(0, -10, 0)).times(
-            Mat4.rotation(1.57079633, 1, 0, 0)).times(
-            Mat4.scale(20, 40, 1));
-        this.shapes.table.draw(context, program_state, table_scale, this.materials.table_material);
     }
 }
