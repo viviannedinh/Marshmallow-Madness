@@ -1,10 +1,10 @@
 # Marshmallow-Madness
 
 ## Team Members
-Alex Chen           @achen2289
-Vivianne Dinh       @viviannedinh
-Megan Pham          @megspham
-Kevin Tang          @icevin
+Alex Chen           @achen2289<br/>
+Vivianne Dinh       @viviannedinh<br/>
+Megan Pham          @megspham<br/>
+Kevin Tang          @icevin<br/>
 
 
 ## Proposal
