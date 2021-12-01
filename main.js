@@ -138,6 +138,7 @@ export class MarshmallowMadness extends Scene {
     };
    
 
+
       texture_buffer_init(gl) {
         // Depth Texture
         this.lightDepthTexture = gl.createTexture();
@@ -209,7 +210,8 @@ export class MarshmallowMadness extends Scene {
 
 
 
-
+    //rendering shadow scene and calling function in display below
+    
     render_scene(context, program_state, shadow_pass, draw_light_source=false, draw_shadow=false) {
         // shadow_pass: true if this is the second pass that draw the shadow.
         // draw_light_source: true if we want to draw the light source.
@@ -246,12 +248,12 @@ export class MarshmallowMadness extends Scene {
                     let remove_transform = mugs_transform.times(Mat4.translation(this.mugs[m].x, this.mugs[m].y, 0));
                     if (this.mugs[m].y < 6) {
                         remove_transform = remove_transform.times(Mat4.translation(0, 0.5, 0));
-                        this.mugs[m].draw(context, program_state, remove_transform, this.materials.mug_body);
+                        this.mugs[m].draw(context, program_state, remove_transform, shadow_pass? this.mug_body: this.pure);
                         this.mugs[m].y += 0.5;
                     }
                     else if (this.mugs[m].x < 40) {
                         remove_transform = remove_transform.times(Mat4.translation(0.5, 0, 0));
-                        this.mugs[m].draw(context, program_state, remove_transform, this.materials.mug_body);
+                        this.mugs[m].draw(context, program_state, remove_transform, shadow_pass? this.mug_body: this.pure);
                         this.mugs[m].x += 0.5;
                     }
                     else {
@@ -260,7 +262,7 @@ export class MarshmallowMadness extends Scene {
                     }
                 }
                 else if (!this.mugs[m].collision) 
-                    this.mugs[m].draw(context, program_state, mugs_transform, this.materials.mug_body);
+                    this.mugs[m].draw(context, program_state, mugs_transform, shadow_pass? this.mug_body: this.pure);
                 
                 mugs_transform = mugs_transform.times(Mat4.translation(2.5, 0, 0));
                 m += 1;
@@ -269,7 +271,7 @@ export class MarshmallowMadness extends Scene {
         }
 
         // player 2 mugs
-        let s_mugs_transform = Mat4.identity().times(Mat4.translation(0, -8.5, 20)).times(Mat4.rotation(2*1.57079633, 0, -1, 0));
+        let s_mugs_transform = Mat4.identity().times(Mat4.translation(0, -7, 20)).times(Mat4.rotation(2*1.57079633, 0, -1, 0));
         s_mugs_transform = s_mugs_transform.times(Mat4.scale(2, 2, 2));
 
         m = 0;
@@ -279,12 +281,12 @@ export class MarshmallowMadness extends Scene {
                     let remove_transform = s_mugs_transform.times(Mat4.translation(this.s_mugs[m].x, this.s_mugs[m].y, 0));
                     if (this.s_mugs[m].y < 6) {
                         remove_transform = remove_transform.times(Mat4.translation(0, 0.5, 0));
-                        this.s_mugs[m].draw(context, program_state, remove_transform, shadows_pass? this.mug_body: this.pure);
+                        this.s_mugs[m].draw(context, program_state, remove_transform, shadow_pass? this.mug_body: this.pure);
                         this.s_mugs[m].y += 0.5;
                     }
                     else if (this.s_mugs[m].x < 40) {
                         remove_transform = remove_transform.times(Mat4.translation(0.5, 0, 0));
-                        this.s_mugs[m].draw(context, program_state, remove_transform, shadows_pass? this.mug_body: this.pure);
+                        this.s_mugs[m].draw(context, program_state, remove_transform, shadow_pass? this.mug_body: this.pure);
                         this.s_mugs[m].x += 0.5;
                     }
                     else {
@@ -293,7 +295,7 @@ export class MarshmallowMadness extends Scene {
                     }
                 }
                 else if (!this.s_mugs[m].collision) 
-                    this.s_mugs[m].draw(context, program_state, s_mugs_transform, shadows_pass? this.mug_body: this.pure);
+                    this.s_mugs[m].draw(context, program_state, s_mugs_transform, shadow_pass? this.mug_body: this.pure);
                 
                 s_mugs_transform = s_mugs_transform.times(Mat4.translation(2.5, 0, 0));
                 m += 1;
@@ -328,26 +330,16 @@ export class MarshmallowMadness extends Scene {
                 program_state.set_camera(Mat4.inverse(current));
             }
         }
-//             for (let j = 0; j < i; j++) {
-//                 this.shapes.mug_body.draw(context, program_state, mugs_transform, shadow_pass? this.mug_body: this.pure);
-//                 mugs_transform = mugs_transform.times(Mat4.translation(1.8, 0, 0));
-//             }
-//             mugs_transform = mugs_transform.times(Mat4.translation(-1.8 * (i + 0.5), 0, 1.8));
-        }
-
-
-        //marshmallow
-//         let marshmallow_scale = Mat4.identity().times(Mat4.scale(1, 1, 1.9)).times(Mat4.translation(0, 0, 20));
-//         this.shapes.marshmallow.draw(context, program_state, marshmallow_scale, shadow_pass? this.marsh : this.pure);
 
     }
+    
 
 
     display(context, program_state) {
 
 
          const t = program_state.animation_time;
-          const dt = program_state.animation_delta_time / 1000;
+         const dt = program_state.animation_delta_time / 1000;
 
         const gl = context.context;
 
@@ -419,12 +411,6 @@ export class MarshmallowMadness extends Scene {
         program_state.projection_transform = Mat4.perspective(
             Math.PI / 4, context.width / context.height, .1, 1000);
 
-
-        //alex: const light_position = vec4(0, 0, 5, 1);
-      //  const light_position = vec4(10, 10, 10, 1);
-
-        // The parameters of the Light are: position, color, size
-       // program_state.lights = [new Light(light_position, color(1, 1, 1, 1), 100)];
 
     }
 }
