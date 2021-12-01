@@ -43,7 +43,7 @@ export class MarshmallowMadness extends Scene {
         // For the floor or other plain objects
         this.floor = new Material(new Shadow_Textured_Phong_Shader(1), {
             color: color(0.5, 0.5, 0.5, 1), ambient: .4, diffusivity: 0.6, specularity: 0.4, smoothness: 64,
-            color_texture: new Texture("assets/wood.jpg"),
+            color_texture: new Texture("assets/woodsigned2.jpeg"),
             light_depth_texture: null
         })
 
