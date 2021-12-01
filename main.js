@@ -27,6 +27,16 @@ export class MarshmallowMadness extends Scene {
             mug7: new Shape_From_File("assets/mug.obj"),
             mug8: new Shape_From_File("assets/mug.obj"),
             mug9: new Shape_From_File("assets/mug.obj"),
+            s_mug0: new Shape_From_File("assets/mug.obj"),
+            s_mug1: new Shape_From_File("assets/mug.obj"),
+            s_mug2: new Shape_From_File("assets/mug.obj"),
+            s_mug3: new Shape_From_File("assets/mug.obj"),
+            s_mug4: new Shape_From_File("assets/mug.obj"),
+            s_mug5: new Shape_From_File("assets/mug.obj"),
+            s_mug6: new Shape_From_File("assets/mug.obj"),
+            s_mug7: new Shape_From_File("assets/mug.obj"),
+            s_mug8: new Shape_From_File("assets/mug.obj"),
+            s_mug9: new Shape_From_File("assets/mug.obj"),
             cup: new defs.Capped_Cylinder(30, 30),
             marshmallow: new defs.Rounded_Capped_Cylinder(10, 10),
             table: new defs.Square()
@@ -48,12 +58,41 @@ export class MarshmallowMadness extends Scene {
             this.mugs[i].x = 0;
             this.mugs[i].y = 0;
         }
+
+        this.s_mugs = [this.shapes.s_mug0, this.shapes.s_mug1, this.shapes.s_mug2, this.shapes.s_mug3, this.shapes.s_mug4, this.shapes.s_mug5, this.shapes.s_mug6, this.shapes.s_mug7, this.shapes.s_mug8, this.shapes.s_mug9];
+        for (let i = 0; i < 10; i++) {
+            this.s_mugs[i].colliding = false;
+            this.s_mugs[i].collision = false;
+            this.s_mugs[i].x = 0;
+            this.s_mugs[i].y = 0;
+        }
   
         this.initial_camera_location = Mat4.look_at(vec3(0, 10, 50), vec3(0, -10, 0), vec3(0, 1, 0));
     }
 
     make_control_panel() {
-        this.key_triggered_button("collide 4", ["c"], () => { this.mugs[4].colliding = true; });
+        // these are just for testing mug removal. you can delete
+        this.key_triggered_button("collide 0", ["v"], () => { this.mugs[0].colliding = true; });
+        this.key_triggered_button("collide 1", ["v"], () => { this.mugs[1].colliding = true; });
+        this.key_triggered_button("collide 2", ["v"], () => { this.mugs[2].colliding = true; });
+        this.key_triggered_button("collide 3", ["v"], () => { this.mugs[3].colliding = true; });
+        this.key_triggered_button("collide 4", ["v"], () => { this.mugs[4].colliding = true; });
+        this.key_triggered_button("collide 5", ["v"], () => { this.mugs[5].colliding = true; });
+        this.key_triggered_button("collide 6", ["v"], () => { this.mugs[6].colliding = true; });
+        this.key_triggered_button("collide 7", ["v"], () => { this.mugs[7].colliding = true; });
+        this.key_triggered_button("collide 8", ["v"], () => { this.mugs[8].colliding = true; });
+        this.key_triggered_button("collide 9", ["v"], () => { this.mugs[9].colliding = true; });
+        this.new_line();
+        this.key_triggered_button("collide 0", ["v"], () => { this.s_mugs[0].colliding = true; });
+        this.key_triggered_button("collide 1", ["v"], () => { this.s_mugs[1].colliding = true; });
+        this.key_triggered_button("collide 2", ["v"], () => { this.s_mugs[2].colliding = true; });
+        this.key_triggered_button("collide 3", ["v"], () => { this.s_mugs[3].colliding = true; });
+        this.key_triggered_button("collide 4", ["v"], () => { this.s_mugs[4].colliding = true; });
+        this.key_triggered_button("collide 5", ["v"], () => { this.s_mugs[5].colliding = true; });
+        this.key_triggered_button("collide 6", ["v"], () => { this.s_mugs[6].colliding = true; });
+        this.key_triggered_button("collide 7", ["v"], () => { this.s_mugs[7].colliding = true; });
+        this.key_triggered_button("collide 8", ["v"], () => { this.s_mugs[8].colliding = true; });
+        this.key_triggered_button("collide 9", ["v"], () => { this.s_mugs[9].colliding = true; });
     };
    
     display(context, program_state) {
@@ -83,38 +122,70 @@ export class MarshmallowMadness extends Scene {
             Mat4.scale(20, 40, 1));
         this.shapes.table.draw(context, program_state, table_scale, this.materials.table_material);
      
-        //cup arrangements
+        // first player mugs
         let mugs_transform = Mat4.identity().times(Mat4.translation(0, -8.5, -20)).times(Mat4.rotation(2*1.57079633, 0, -1, 0));
         mugs_transform = mugs_transform.times(Mat4.scale(2, 2, 2));
-        
 
-        let ind = 0;
+        let m = 0;
         for (let i = 1; i < 5; i++) {
             for (let j = 0; j < i; j++) { 
-                if (this.mugs[ind].colliding) {
-                    let remove_transform = mugs_transform.times(Mat4.translation(this.mugs[ind].x, this.mugs[ind].y, 0));
-                    if (this.mugs[ind].y < 6) {
+                if (this.mugs[m].colliding) {
+                    let remove_transform = mugs_transform.times(Mat4.translation(this.mugs[m].x, this.mugs[m].y, 0));
+                    if (this.mugs[m].y < 6) {
                         remove_transform = remove_transform.times(Mat4.translation(0, 0.5, 0));
-                        this.mugs[ind].draw(context, program_state, remove_transform, this.materials.mug_body);
-                        this.mugs[ind].y += 0.5;
+                        this.mugs[m].draw(context, program_state, remove_transform, this.materials.mug_body);
+                        this.mugs[m].y += 0.5;
                     }
-                    else if (this.mugs[ind].x < 40) {
+                    else if (this.mugs[m].x < 40) {
                         remove_transform = remove_transform.times(Mat4.translation(0.5, 0, 0));
-                        this.mugs[ind].draw(context, program_state, remove_transform, this.materials.mug_body);
-                        this.mugs[ind].x += 0.5;
+                        this.mugs[m].draw(context, program_state, remove_transform, this.materials.mug_body);
+                        this.mugs[m].x += 0.5;
                     }
                     else {
-                        this.mugs[ind].colliding = false;
-                        this.mugs[ind].collision = true;
+                        this.mugs[m].colliding = false;
+                        this.mugs[m].collision = true;
                     }
                 }
-                else if (!this.mugs[ind].collision) 
-                    this.mugs[ind].draw(context, program_state, mugs_transform, this.materials.mug_body);
+                else if (!this.mugs[m].collision) 
+                    this.mugs[m].draw(context, program_state, mugs_transform, this.materials.mug_body);
                 
                 mugs_transform = mugs_transform.times(Mat4.translation(2.5, 0, 0));
-                ind += 1;
+                m += 1;
             }
             mugs_transform = mugs_transform.times(Mat4.translation(-2.5 * (i + 0.5), 0, 2.5));    
+        }
+
+        // second player mugs
+        let s_mugs_transform = Mat4.identity().times(Mat4.translation(0, -8.5, 20)).times(Mat4.rotation(2*1.57079633, 0, -1, 0));
+        s_mugs_transform = s_mugs_transform.times(Mat4.scale(2, 2, 2));
+
+        m = 0;
+        for (let i = 1; i < 5; i++) {
+            for (let j = 0; j < i; j++) { 
+                if (this.s_mugs[m].colliding) {
+                    let remove_transform = s_mugs_transform.times(Mat4.translation(this.s_mugs[m].x, this.s_mugs[m].y, 0));
+                    if (this.s_mugs[m].y < 6) {
+                        remove_transform = remove_transform.times(Mat4.translation(0, 0.5, 0));
+                        this.s_mugs[m].draw(context, program_state, remove_transform, this.materials.mug_body);
+                        this.s_mugs[m].y += 0.5;
+                    }
+                    else if (this.s_mugs[m].x < 40) {
+                        remove_transform = remove_transform.times(Mat4.translation(0.5, 0, 0));
+                        this.s_mugs[m].draw(context, program_state, remove_transform, this.materials.mug_body);
+                        this.s_mugs[m].x += 0.5;
+                    }
+                    else {
+                        this.s_mugs[m].colliding = false;
+                        this.s_mugs[m].collision = true;
+                    }
+                }
+                else if (!this.s_mugs[m].collision) 
+                    this.s_mugs[m].draw(context, program_state, s_mugs_transform, this.materials.mug_body);
+                
+                s_mugs_transform = s_mugs_transform.times(Mat4.translation(2.5, 0, 0));
+                m += 1;
+            }
+            s_mugs_transform = s_mugs_transform.times(Mat4.translation(-2.5 * (i + 0.5), 0, -2.5));    
         }
 
 //         axis 
