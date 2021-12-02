@@ -1,6 +1,7 @@
 import {defs, tiny} from './examples/common.js';
 import {Shape_From_File} from "./examples/obj-file-demo.js";
 import {Body, Simulation} from "./examples/collisions-demo.js";
+import {Text_Line} from "./examples/text-demo.js";
 
 const {
     Vector, Vector3, vec, vec3, vec4, color, hex_color, Shader, Matrix, Mat4, Light, Shape, Material, Texture, Scene
@@ -19,7 +20,8 @@ export class MarshmallowMadness extends Simulation {
             mug_body: new Shape_From_File("assets/mug.obj"),
             cup: new defs.Capped_Cylinder(30, 30),
             marshmallow: new defs.Rounded_Capped_Cylinder(10, 10),
-            table: new defs.Square()
+            table: new defs.Square(),
+            info_strings: new Text_Line(100),
         };
 
         // *** Materials
@@ -29,12 +31,21 @@ export class MarshmallowMadness extends Simulation {
             marshmallow: new Material(new defs.Phong_Shader(),
                 {ambient: .5, diffusivity: 1, color: hex_color("#ffffff")}),
             table_material: new Material(new defs.Textured_Phong(1), {ambient: .9, texture: new Texture("assets/wood.jpg")}),
+            info_strings: new Material(new defs.Phong_Shader(),
+                {ambient: .5, diffusivity: 1, color: hex_color("#ffffff")}),
+            info_strings_image: new Material(new defs.Textured_Phong(1), {
+                ambient: 1, diffusivity: 0, specularity: 0,
+                texture: new Texture("assets/text.png")
+            }),
         }
         
+        this.info_strings_transform = Mat4.identity()
+            .times(Mat4.translation(...vec3(-13, 11, 50)))
+            .times(Mat4.rotation(-Math.PI / 15, 1, 0, 0))
+            .times(Mat4.scale(.25, .25, 1))
         
-        this.max_velocity = 30;
-        this.horizontal_angle = Math.PI / 2; // angle right of -z axis (on xz plane)
         this.initialize_marshmallow();
+        this.initialize_info_strings();
 
         this.initial_camera_location = Mat4.look_at(vec3(0, 10, 70), vec3(0, -10, 0), vec3(0, 1, 0));
     }
@@ -45,14 +56,44 @@ export class MarshmallowMadness extends Simulation {
         });
         this.new_line();
         this.key_triggered_button("Increase power", ["i"], () => {
-            if (this.shot_fired != true && this.current_velocity < this.max_velocity) {
+            if (this.shot_fired != true) {
                 this.current_velocity += 2;
+                this.initialize_info_strings();
             }
         });
         this.new_line();
         this.key_triggered_button("Decrease power", ["k"], () => {
             if (this.shot_fired != true && this.current_velocity > 0) {
                 this.current_velocity -= 2;
+                this.initialize_info_strings();
+            }
+        });
+        this.new_line();
+        this.key_triggered_button("Aim left", ["j"], () => {
+            if (this.shot_fired != true && this.horizontal_angle < Math.PI) {
+                this.horizontal_angle += 1 / 180 * Math.PI;
+                this.initialize_info_strings();
+            }
+        });
+        this.new_line();
+        this.key_triggered_button("Aim right", ["l"], () => {
+            if (this.shot_fired != true && this.horizontal_angle > 0) {
+                this.horizontal_angle -= 1 / 180 * Math.PI;
+                this.initialize_info_strings();
+            }
+        });
+        this.new_line();
+        this.key_triggered_button("Aim up", ["u"], () => {
+            if (this.shot_fired != true && (this.vertical_angle + 5 / 180 * Math.PI) < Math.PI / 2) {
+                this.vertical_angle += 5 / 180 * Math.PI;
+                this.initialize_info_strings();
+            }
+        });
+        this.new_line();
+        this.key_triggered_button("Aim down", ["o"], () => {
+            if (this.shot_fired != true && this.vertical_angle > 0) {
+                this.vertical_angle -= 5 / 180 * Math.PI;
+                this.initialize_info_strings();
             }
         });
     };
@@ -62,7 +103,17 @@ export class MarshmallowMadness extends Simulation {
         this.bodies = [];
         this.current_velocity = 0;
         this.shot_fired = false;
-        this.marshmallow_angle = Math.PI / 3; // angle above -z axis (on yz plane)
+        this.vertical_angle = Math.PI / 3; // angle above -z axis (on yz plane)
+        this.horizontal_angle = Math.PI / 2; // angle right of -z axis (on xz plane)
+    }
+
+    initialize_info_strings() {
+        // Reset info string array to contain up to date values
+        this.info_strings = [
+            `Power: ${this.current_velocity}`,
+            `Horizontal angle: ${Math.round(this.horizontal_angle / Math.PI * 180) - 90}`,
+            `Vertical angle: ${Math.round(this.vertical_angle / Math.PI * 180)}`,
+        ]
     }
 
     update_state(dt) {
@@ -88,32 +139,43 @@ export class MarshmallowMadness extends Simulation {
         if (this.shot_fired) {
             for (let b of this.bodies) {
                 // Gravity on Earth, where 1 unit in world space = 1 meter:
-                let z_vel = -this.current_velocity * Math.cos(this.marshmallow_angle);
-                let y_vel = this.current_velocity * Math.sin(this.marshmallow_angle) + dt * -9.8;
-//                 let x_vel = this.current_velocity * Math.cos(this.horizontal_angle);
+                let z_vel = -this.current_velocity * Math.cos(this.vertical_angle);
+                let y_vel = this.current_velocity * Math.sin(this.vertical_angle) + dt * -9.8;
+                let x_vel = this.current_velocity * Math.cos(this.horizontal_angle);
                 
                 this.current_velocity = Math.pow(
                     Math.pow(z_vel, 2) + Math.pow(y_vel, 2),
                     0.5
                 );
-                this.marshmallow_angle = Math.atan(y_vel / -z_vel);
+                this.vertical_angle = Math.atan(y_vel / -z_vel);
 
                 b.linear_velocity[2] = z_vel;
                 b.linear_velocity[1] = y_vel;
-//                 b.linear_velocity[0] = x_vel;
+                b.linear_velocity[0] = x_vel;
 
                 // If about to fall through floor, reverse y velocity:
                 // TODO: collision logic and switch camera angles / player
                 if (b.center[1] < -8 && b.linear_velocity[1] < 0) {
 //                     b.linear_velocity[1] *= -.8;
 
-
                     this.initialize_marshmallow();
+                    this.initialize_info_strings();
                 }
                 b.advance(dt);
             }
             // Delete bodies that stop or stray too far away:
 //             this.bodies = this.bodies.filter(b => b.center.norm() < 50 && b.linear_velocity.norm() > 2);
+        }
+    }
+
+    update_info_strings(context, program_state) {
+        // Draw in info for user to see
+        let curr_info_strings_transform = this.info_strings_transform;
+        for (let i in this.info_strings) {
+            this.shapes.info_strings.set_string(this.info_strings[i], context.context);
+            this.shapes.info_strings.draw(context, program_state, curr_info_strings_transform, this.materials.info_strings_image);
+            curr_info_strings_transform = curr_info_strings_transform
+                .times(Mat4.translation(0, -2, 0))
         }
     }
 
@@ -159,15 +221,6 @@ export class MarshmallowMadness extends Simulation {
             mugs_transform = mugs_transform.times(Mat4.translation(-1.8 * (i + 0.5), 0, 1.8));
         }
 
-//         axis 
-//         let axis_transform = Mat4.identity().times(Mat4.translation(0, 0, 38));
-//         this.shapes.box.draw(context, program_state, axis_transform.times(Mat4.scale(10, .1, .1)), this.materials.test.override({color: color(1, 0, 0, 1)}));
-//         this.shapes.box.draw(context, program_state, axis_transform.times(Mat4.scale(.1, 10, .1)), this.materials.test.override({color: color(0, 1, 0, 1)}));
-//         this.shapes.box.draw(context, program_state, axis_transform.times(Mat4.scale(.1, .1, 10)), this.materials.test.override({color: color(0, 0, 1, 1)}));
-       
-        //marshmallow
-//         let marshmallow_scale = Mat4.identity().times(Mat4.scale(1, 1, 1.9)).times(Mat4.translation(0, 0, 20));
-//         this.shapes.marshmallow.draw(context, program_state, marshmallow_scale, this.materials.marshmallow);
-
+        this.update_info_strings(context, program_state);
     }
 }
