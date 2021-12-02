@@ -472,13 +472,23 @@ export class MarshmallowMadness extends Simulation {
 
                 // If about to fall through floor, reverse y velocity:
                 // TODO: collision logic and switch camera angles / player
-                if (b.center[1] < -9 && b.linear_velocity[1] < 0) {
-                    b.linear_velocity[1] *= -.8;
-                    this.bounce += 1;
-                    console.log(this.bounce);
-                }
+                
+                // Table bounds
+                // x:  -20 < x < 20
+                // y: > -9
+                // z: -40 < z < 40
 
-                if (this.bounce > 3) {
+                if (Math.abs(b.center[0]) < 20 && Math.abs(b.center[2]) < 40) {
+                    if (b.center[1] < -9  && b.linear_velocity[1] < 0) {
+                        b.linear_velocity[1] *= -.8;
+                        this.bounce += 1;
+                        console.log(this.bounce);
+                    }
+                    if (this.bounce > 3) {
+                        this.initialize_marshmallow();
+                        this.initialize_info_strings();
+                    }
+                } else if (b.center[1] < -40) {
                     this.initialize_marshmallow();
                     this.initialize_info_strings();
                 }
@@ -737,7 +747,7 @@ export class MarshmallowMadness extends Simulation {
         // }
 
         // axis 
-        let axis_transform = Mat4.identity().times(Mat4.translation(0, -9, 38));
+        let axis_transform = Mat4.identity().times(Mat4.translation(20, -9, 40));
         this.shapes.box.draw(context, program_state, axis_transform.times(Mat4.scale(10, .1, .1)), this.materials.marsh.override({color: color(1, 0, 0, 1)}));
         this.shapes.box.draw(context, program_state, axis_transform.times(Mat4.scale(.1, 10, .1)), this.materials.marsh.override({color: color(0, 1, 0, 1)}));
         this.shapes.box.draw(context, program_state, axis_transform.times(Mat4.scale(.1, .1, 10)), this.materials.marsh.override({color: color(0, 0, 1, 1)}));
