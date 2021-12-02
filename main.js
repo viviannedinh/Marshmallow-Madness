@@ -1,6 +1,8 @@
 import {defs, tiny} from './examples/common.js';
 import {Shape_From_File} from "./examples/obj-file-demo.js";
 import {Body, Simulation} from "./examples/collisions-demo.js";
+import {Color_Phong_Shader, Shadow_Textured_Phong_Shader,
+    Depth_Texture_Shader_2D, Buffered_Texture, LIGHT_DEPTH_TEX_SIZE} from './examples/shadow-demo-shaders.js'
 
 const {
     Vector, Vector3, vec, vec3, vec4, color, hex_color, Shader, Matrix, Mat4, Light, Shape, Material, Texture, Scene
@@ -14,12 +16,33 @@ export class MarshmallowMadness extends Simulation {
         // At the beginning of our program, load one of each of these shape definitions onto the GPU.
         this.shapes = {
             box: new defs.Cube(),
-            torus: new defs.Torus(15, 15),
             mug_body_old: new defs.Single_Capped_Cylinder(15, 15, [[0, 1], [0, 1]]),
             mug_body: new Shape_From_File("assets/mug.obj"),
+            mug0: new Shape_From_File("assets/mug.obj"),
+            mug1: new Shape_From_File("assets/mug.obj"),
+            mug2: new Shape_From_File("assets/mug.obj"),
+            mug3: new Shape_From_File("assets/mug.obj"),
+            mug4: new Shape_From_File("assets/mug.obj"),
+            mug5: new Shape_From_File("assets/mug.obj"),
+            mug6: new Shape_From_File("assets/mug.obj"),
+            mug7: new Shape_From_File("assets/mug.obj"),
+            mug8: new Shape_From_File("assets/mug.obj"),
+            mug9: new Shape_From_File("assets/mug.obj"),
+            s_mug0: new Shape_From_File("assets/mug.obj"),
+            s_mug1: new Shape_From_File("assets/mug.obj"),
+            s_mug2: new Shape_From_File("assets/mug.obj"),
+            s_mug3: new Shape_From_File("assets/mug.obj"),
+            s_mug4: new Shape_From_File("assets/mug.obj"),
+            s_mug5: new Shape_From_File("assets/mug.obj"),
+            s_mug6: new Shape_From_File("assets/mug.obj"),
+            s_mug7: new Shape_From_File("assets/mug.obj"),
+            s_mug8: new Shape_From_File("assets/mug.obj"),
+            s_mug9: new Shape_From_File("assets/mug.obj"),
             cup: new defs.Capped_Cylinder(30, 30),
             marshmallow: new defs.Rounded_Capped_Cylinder(10, 10),
-            table: new defs.Square()
+            s_marshmallow: new defs.Rounded_Capped_Cylinder(10, 10),
+            sphere: new defs.Subdivision_Sphere(6),
+            table: new defs.Cube(),
         };
 
         // *** Materials
