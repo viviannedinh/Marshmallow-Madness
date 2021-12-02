@@ -21,26 +21,6 @@ export class MarshmallowMadness extends Simulation {
             box: new defs.Cube(),
             mug_body_old: new defs.Single_Capped_Cylinder(15, 15, [[0, 1], [0, 1]]),
             mug_body: new Shape_From_File("assets/mug.obj"),
-            mug0: new Shape_From_File("assets/mug.obj"),
-            mug1: new Shape_From_File("assets/mug.obj"),
-            mug2: new Shape_From_File("assets/mug.obj"),
-            mug3: new Shape_From_File("assets/mug.obj"),
-            mug4: new Shape_From_File("assets/mug.obj"),
-            mug5: new Shape_From_File("assets/mug.obj"),
-            mug6: new Shape_From_File("assets/mug.obj"),
-            mug7: new Shape_From_File("assets/mug.obj"),
-            mug8: new Shape_From_File("assets/mug.obj"),
-            mug9: new Shape_From_File("assets/mug.obj"),
-            s_mug0: new Shape_From_File("assets/mug.obj"),
-            s_mug1: new Shape_From_File("assets/mug.obj"),
-            s_mug2: new Shape_From_File("assets/mug.obj"),
-            s_mug3: new Shape_From_File("assets/mug.obj"),
-            s_mug4: new Shape_From_File("assets/mug.obj"),
-            s_mug5: new Shape_From_File("assets/mug.obj"),
-            s_mug6: new Shape_From_File("assets/mug.obj"),
-            s_mug7: new Shape_From_File("assets/mug.obj"),
-            s_mug8: new Shape_From_File("assets/mug.obj"),
-            s_mug9: new Shape_From_File("assets/mug.obj"),
             cup: new defs.Capped_Cylinder(30, 30),
             marshmallow: new defs.Rounded_Capped_Cylinder(10, 10),
             s_marshmallow: new defs.Rounded_Capped_Cylinder(10, 10),
@@ -65,11 +45,12 @@ export class MarshmallowMadness extends Simulation {
                     diffusivity: 1,
                     color: hex_color("#ffffff")
                 }),
-            table_material: new Material(new defs.Textured_Phong(1),
-                {
-                    ambient: .9,
-                    texture: new Texture("assets/wood.jpg")
-                }),
+            // table_material: new Material(new defs.Textured_Phong(1),
+            //     {
+            //         ambient: .9,
+            //         diffusivity: 1,
+            //         texture: new Texture("assets/wood.jpg")
+            //     }),
             marsh: new Material(new Shadow_Textured_Phong_Shader(1),
                 {
                     ambient: .5,
@@ -89,9 +70,9 @@ export class MarshmallowMadness extends Simulation {
             floor: new Material(new Shadow_Textured_Phong_Shader(1),
                 {
                     color: color(0.5, 0.5, 0.5, 1),
-                    ambient: .4,
+                    ambient: .9,
                     diffusivity: 0.6, specularity: 0.4, smoothness: 64,
-                    color_texture: new Texture("assets/woodsigned2.jpeg"),
+                    // color_texture: new Texture("assets/woodsigned2.jpeg"),
                     light_depth_texture: null
                 }),
             pure: new Material(new Color_Phong_Shader(), {
@@ -111,24 +92,41 @@ export class MarshmallowMadness extends Simulation {
                     diffusivity: 0,
                     specularity: 0,
                     texture: null
-                })
+                }),
+            info_strings: new Material(new defs.Phong_Shader(),
+                {
+                    ambient: .5,
+                    diffusivity: 1,
+                    color: hex_color("#ffffff")
+                }),
+            info_strings_image: new Material(new defs.Textured_Phong(1),
+                {
+                    ambient: 1,
+                    iffusivity: 0,
+                    specularity: 0,
+                    texture: new Texture("assets/text.png")
+                }),
         };
 
 
-        this.mugs = [this.shapes.mug0, this.shapes.mug1, this.shapes.mug2, this.shapes.mug3, this.shapes.mug4, this.shapes.mug5, this.shapes.mug6, this.shapes.mug7, this.shapes.mug8, this.shapes.mug9];
+        this.mugs = [];
         for (let i = 0; i < 10; i++) {
-            this.mugs[i].colliding = false;
-            this.mugs[i].collision = false;
-            this.mugs[i].x = 0;
-            this.mugs[i].y = 0;
+            var a = {};
+            a.colliding = false;
+            a.collision = false;
+            a.x = 0;
+            a.y = 0;
+            this.mugs.push(a);
         }
 
-        this.s_mugs = [this.shapes.s_mug0, this.shapes.s_mug1, this.shapes.s_mug2, this.shapes.s_mug3, this.shapes.s_mug4, this.shapes.s_mug5, this.shapes.s_mug6, this.shapes.s_mug7, this.shapes.s_mug8, this.shapes.s_mug9];
+        this.s_mugs = [];
         for (let i = 0; i < 10; i++) {
-            this.s_mugs[i].colliding = false;
-            this.s_mugs[i].collision = false;
-            this.s_mugs[i].x = 0;
-            this.s_mugs[i].y = 0;
+            var a = {};
+            a.colliding = false;
+            a.collision = false;
+            a.x = 0;
+            a.y = 0;
+            this.s_mugs.push(a);
         }
 
         this.max_velocity = 30;
@@ -325,12 +323,12 @@ export class MarshmallowMadness extends Simulation {
                     let remove_transform = mugs_transform.times(Mat4.translation(this.mugs[m].x, this.mugs[m].y, 0));
                     if (this.mugs[m].y < 6) {
                         remove_transform = remove_transform.times(Mat4.translation(0, 0.5, 0));
-                        this.mugs[m].draw(context, program_state, remove_transform, shadow_pass ? this.materials.mug_body : this.materials.pure);
+                        this.shapes.mug_body.draw(context, program_state, remove_transform, shadow_pass ? this.materials.mug_body : this.materials.pure);
                         this.mugs[m].y += 0.5;
                     }
                     else if (this.mugs[m].x < 40) {
                         remove_transform = remove_transform.times(Mat4.translation(0.5, 0, 0));
-                        this.mugs[m].draw(context, program_state, remove_transform, shadow_pass ? this.materials.mug_body : this.materials.pure);
+                        this.shapes.mug_body.draw(context, program_state, remove_transform, shadow_pass ? this.materials.mug_body : this.materials.pure);
                         this.mugs[m].x += 0.5;
                     }
                     else {
@@ -339,7 +337,7 @@ export class MarshmallowMadness extends Simulation {
                     }
                 }
                 else if (!this.mugs[m].collision)
-                    this.mugs[m].draw(context, program_state, mugs_transform, shadow_pass ? this.materials.mug_body : this.materials.pure);
+                    this.shapes.mug_body.draw(context, program_state, mugs_transform, shadow_pass ? this.materials.mug_body : this.materials.pure);
 
                 mugs_transform = mugs_transform.times(Mat4.translation(2.5, 0, 0));
                 m += 1;
@@ -358,12 +356,12 @@ export class MarshmallowMadness extends Simulation {
                     let remove_transform = s_mugs_transform.times(Mat4.translation(this.s_mugs[m].x, this.s_mugs[m].y, 0));
                     if (this.s_mugs[m].y < 6) {
                         remove_transform = remove_transform.times(Mat4.translation(0, 0.5, 0));
-                        this.s_mugs[m].draw(context, program_state, remove_transform, shadow_pass ? this.materials.mug_body : this.materials.pure);
+                        this.shapes.mug_body.draw(context, program_state, remove_transform, shadow_pass ? this.materials.mug_body : this.materials.pure);
                         this.s_mugs[m].y += 0.5;
                     }
                     else if (this.s_mugs[m].x < 40) {
                         remove_transform = remove_transform.times(Mat4.translation(0.5, 0, 0));
-                        this.s_mugs[m].draw(context, program_state, remove_transform, shadow_pass ? this.materials.mug_body : this.materials.pure);
+                        this.shapes.mug_body.draw(context, program_state, remove_transform, shadow_pass ? this.materials.mug_body : this.materials.pure);
                         this.s_mugs[m].x += 0.5;
                     }
                     else {
@@ -372,7 +370,7 @@ export class MarshmallowMadness extends Simulation {
                     }
                 }
                 else if (!this.s_mugs[m].collision)
-                    this.s_mugs[m].draw(context, program_state, s_mugs_transform, shadow_pass ? this.materials.mug_body : this.materials.pure);
+                    this.shapes.mug_body.draw(context, program_state, s_mugs_transform, shadow_pass ? this.materials.mug_body : this.materials.pure);
 
                 s_mugs_transform = s_mugs_transform.times(Mat4.translation(2.5, 0, 0));
                 m += 1;
@@ -415,8 +413,10 @@ export class MarshmallowMadness extends Simulation {
         this.bodies = [];
         this.current_velocity = 0;
         this.shot_fired = false;
+        this.shot_fired_last = false;
         this.vertical_angle = Math.PI / 3; // angle above -z axis (on yz plane)
         this.horizontal_angle = Math.PI / 2; // angle right of -z axis (on xz plane)
+        this.bounce = 0;
     }
 
     initialize_info_strings() {
@@ -448,28 +448,37 @@ export class MarshmallowMadness extends Simulation {
 
         // If shot was fired, update velocity and position of marshmallow
         // If marshmallow has collision, reset marshmallow position & power
+        
         if (this.shot_fired) {
+
+            let z_vel = -this.current_velocity * Math.cos(this.vertical_angle);
+            let y_vel = this.current_velocity * Math.sin(this.vertical_angle);
+            let x_vel = this.current_velocity * Math.cos(this.horizontal_angle);
+            
+            this.current_velocity = Math.pow(
+                Math.pow(z_vel, 2) + Math.pow(y_vel, 2),
+                0.5
+            );
+            this.vertical_angle = Math.atan(y_vel / -z_vel);
+            
             for (let b of this.bodies) {
+                if (!this.shot_fired_last) {
+                    b.linear_velocity[2] = z_vel;
+                    b.linear_velocity[1] = y_vel;
+                    b.linear_velocity[0] = x_vel;
+                }
                 // Gravity on Earth, where 1 unit in world space = 1 meter:
-                let z_vel = -this.current_velocity * Math.cos(this.vertical_angle);
-                let y_vel = this.current_velocity * Math.sin(this.vertical_angle) + dt * -9.8;
-                let x_vel = this.current_velocity * Math.cos(this.horizontal_angle);
-
-                this.current_velocity = Math.pow(
-                    Math.pow(z_vel, 2) + Math.pow(y_vel, 2),
-                    0.5
-                );
-                this.vertical_angle = Math.atan(y_vel / -z_vel);
-
-                b.linear_velocity[2] = z_vel;
-                b.linear_velocity[1] = y_vel;
-                b.linear_velocity[0] = x_vel;
+                b.linear_velocity[1] += dt * -9.8;
 
                 // If about to fall through floor, reverse y velocity:
                 // TODO: collision logic and switch camera angles / player
-                if (b.center[1] < -8 && b.linear_velocity[1] < 0) {
-                    //                     b.linear_velocity[1] *= -.8;
+                if (b.center[1] < -9 && b.linear_velocity[1] < 0) {
+                    b.linear_velocity[1] *= -.8;
+                    this.bounce += 1;
+                    console.log(this.bounce);
+                }
 
+                if (this.bounce > 3) {
                     this.initialize_marshmallow();
                     this.initialize_info_strings();
                 }
@@ -478,6 +487,8 @@ export class MarshmallowMadness extends Simulation {
             // Delete bodies that stop or stray too far away:
             //             this.bodies = this.bodies.filter(b => b.center.norm() < 50 && b.linear_velocity.norm() > 2);
         }
+
+        this.shot_fired_last = this.shot_fired;
     }
 
 
@@ -517,12 +528,12 @@ export class MarshmallowMadness extends Simulation {
                     let remove_transform = mugs_transform.times(Mat4.translation(this.mugs[m].x, this.mugs[m].y, 0));
                     if (this.mugs[m].y < 6) {
                         remove_transform = remove_transform.times(Mat4.translation(0, 0.5, 0));
-                        this.mugs[m].draw(context, program_state, remove_transform, shadow_pass ? this.materials.mug_body : this.materials.pure);
+                        this.shapes.mug_body.draw(context, program_state, remove_transform, shadow_pass ? this.materials.mug_body : this.materials.pure);
                         this.mugs[m].y += 0.5;
                     }
                     else if (this.mugs[m].x < 40) {
                         remove_transform = remove_transform.times(Mat4.translation(0.5, 0, 0));
-                        this.mugs[m].draw(context, program_state, remove_transform, shadow_pass ? this.materials.mug_body : this.materials.pure);
+                        this.shapes.mug_body.draw(context, program_state, remove_transform, shadow_pass ? this.materials.mug_body : this.materials.pure);
                         this.mugs[m].x += 0.5;
                     }
                     else {
@@ -531,7 +542,7 @@ export class MarshmallowMadness extends Simulation {
                     }
                 }
                 else if (!this.mugs[m].collision)
-                    this.mugs[m].draw(context, program_state, mugs_transform, shadow_pass ? this.materials.mug_body : this.materials.pure);
+                    this.shapes.mug_body.draw(context, program_state, mugs_transform, shadow_pass ? this.materials.mug_body : this.materials.pure);
 
                 mugs_transform = mugs_transform.times(Mat4.translation(2.5, 0, 0));
                 m += 1;
@@ -550,12 +561,12 @@ export class MarshmallowMadness extends Simulation {
                     let remove_transform = s_mugs_transform.times(Mat4.translation(this.s_mugs[m].x, this.s_mugs[m].y, 0));
                     if (this.s_mugs[m].y < 6) {
                         remove_transform = remove_transform.times(Mat4.translation(0, 0.5, 0));
-                        this.s_mugs[m].draw(context, program_state, remove_transform, shadow_pass ? this.materials.mug_body : this.materials.pure);
+                        this.shapes.mug_body.draw(context, program_state, remove_transform, shadow_pass ? this.materials.mug_body : this.materials.pure);
                         this.s_mugs[m].y += 0.5;
                     }
                     else if (this.s_mugs[m].x < 40) {
                         remove_transform = remove_transform.times(Mat4.translation(0.5, 0, 0));
-                        this.s_mugs[m].draw(context, program_state, remove_transform, shadow_pass ? this.materials.mug_body : this.materials.pure);
+                        this.shapes.mug_body.draw(context, program_state, remove_transform, shadow_pass ? this.materials.mug_body : this.materials.pure);
                         this.s_mugs[m].x += 0.5;
                     }
                     else {
@@ -564,7 +575,7 @@ export class MarshmallowMadness extends Simulation {
                     }
                 }
                 else if (!this.s_mugs[m].collision)
-                    this.s_mugs[m].draw(context, program_state, s_mugs_transform, shadow_pass ? this.materials.mug_body : this.materials.pure);
+                    this.shapes.mug_body.draw(context, program_state, s_mugs_transform, shadow_pass ? this.materials.mug_body : this.materials.pure);
 
                 s_mugs_transform = s_mugs_transform.times(Mat4.translation(2.5, 0, 0));
                 m += 1;
@@ -725,11 +736,11 @@ export class MarshmallowMadness extends Simulation {
         //     mugs_transform = mugs_transform.times(Mat4.translation(-1.8 * (i + 0.5), 0, 1.8));
         // }
 
-        //         axis 
-        //         let axis_transform = Mat4.identity().times(Mat4.translation(0, 0, 38));
-        //         this.shapes.box.draw(context, program_state, axis_transform.times(Mat4.scale(10, .1, .1)), this.materials.test.override({color: color(1, 0, 0, 1)}));
-        //         this.shapes.box.draw(context, program_state, axis_transform.times(Mat4.scale(.1, 10, .1)), this.materials.test.override({color: color(0, 1, 0, 1)}));
-        //         this.shapes.box.draw(context, program_state, axis_transform.times(Mat4.scale(.1, .1, 10)), this.materials.test.override({color: color(0, 0, 1, 1)}));
+        // axis 
+        let axis_transform = Mat4.identity().times(Mat4.translation(0, -9, 38));
+        this.shapes.box.draw(context, program_state, axis_transform.times(Mat4.scale(10, .1, .1)), this.materials.marsh.override({color: color(1, 0, 0, 1)}));
+        this.shapes.box.draw(context, program_state, axis_transform.times(Mat4.scale(.1, 10, .1)), this.materials.marsh.override({color: color(0, 1, 0, 1)}));
+        this.shapes.box.draw(context, program_state, axis_transform.times(Mat4.scale(.1, .1, 10)), this.materials.marsh.override({color: color(0, 0, 1, 1)}));
 
         //marshmallow
         //         let marshmallow_scale = Mat4.identity().times(Mat4.scale(1, 1, 1.9)).times(Mat4.translation(0, 0, 20));
