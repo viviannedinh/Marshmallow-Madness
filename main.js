@@ -287,127 +287,6 @@ export class MarshmallowMadness extends Simulation {
         gl.bindFramebuffer(gl.FRAMEBUFFER, null);
     }
 
-    render_scene(context, program_state, shadow_pass, draw_light_source = false, draw_shadow = false) {
-        // shadow_pass: true if this is the second pass that draw the shadow.
-        // draw_light_source: true if we want to draw the light source.
-        // draw_shadow: true if we want to draw the shadow
-
-        let light_position = this.light_position;
-        let light_color = this.light_color;
-        const t = program_state.animation_time;
-
-        program_state.draw_shadow = draw_shadow;
-
-        if (draw_light_source && shadow_pass) {
-            this.shapes.sphere.draw(context, program_state,
-                Mat4.translation(light_position[0], light_position[1], light_position[2]).times(Mat4.scale(2, 2, 2)),
-                this.materials.light_src.override({ color: light_color })
-            );
-        }
-
-        let table_scale = Mat4.identity().times(
-            Mat4.translation(0, -10, 0)).times(
-                Mat4.rotation(Math.PI / 2.0, 1, 0, 0)).times(
-                    Mat4.scale(20, 40, 1));
-
-        this.shapes.table.draw(context, program_state, table_scale, shadow_pass ? this.materials.floor : this.materials.pure);
-
-        //cup arrangements
-        let mugs_transform = Mat4.identity().times(Mat4.translation(0, -7, -20)).times(Mat4.rotation(Math.PI, 0, -1, 0));
-        mugs_transform = mugs_transform.times(Mat4.scale(2, 2, 2));
-
-        let m = 0;
-        for (let i = 1; i < 5; i++) {
-            for (let j = 0; j < i; j++) {
-                if (this.mugs[m].colliding) {
-                    let remove_transform = mugs_transform.times(Mat4.translation(this.mugs[m].x, this.mugs[m].y, 0));
-                    if (this.mugs[m].y < 6) {
-                        remove_transform = remove_transform.times(Mat4.translation(0, 0.5, 0));
-                        this.shapes.mug_body.draw(context, program_state, remove_transform, shadow_pass ? this.materials.mug_body : this.materials.pure);
-                        this.mugs[m].y += 0.5;
-                    }
-                    else if (this.mugs[m].x < 40) {
-                        remove_transform = remove_transform.times(Mat4.translation(0.5, 0, 0));
-                        this.shapes.mug_body.draw(context, program_state, remove_transform, shadow_pass ? this.materials.mug_body : this.materials.pure);
-                        this.mugs[m].x += 0.5;
-                    }
-                    else {
-                        this.mugs[m].colliding = false;
-                        this.mugs[m].collision = true;
-                    }
-                }
-                else if (!this.mugs[m].collision)
-                    this.shapes.mug_body.draw(context, program_state, mugs_transform, shadow_pass ? this.materials.mug_body : this.materials.pure);
-
-                mugs_transform = mugs_transform.times(Mat4.translation(2.5, 0, 0));
-                m += 1;
-            }
-            mugs_transform = mugs_transform.times(Mat4.translation(-2.5 * (i + 0.5), 0, 2.5));
-        }
-
-        // player 2 mugs
-        let s_mugs_transform = Mat4.identity().times(Mat4.translation(0, -7, 20)).times(Mat4.rotation(Math.PI, 0, -1, 0));
-        s_mugs_transform = s_mugs_transform.times(Mat4.scale(2, 2, 2));
-
-        m = 0;
-        for (let i = 1; i < 5; i++) {
-            for (let j = 0; j < i; j++) {
-                if (this.s_mugs[m].colliding) {
-                    let remove_transform = s_mugs_transform.times(Mat4.translation(this.s_mugs[m].x, this.s_mugs[m].y, 0));
-                    if (this.s_mugs[m].y < 6) {
-                        remove_transform = remove_transform.times(Mat4.translation(0, 0.5, 0));
-                        this.shapes.mug_body.draw(context, program_state, remove_transform, shadow_pass ? this.materials.mug_body : this.materials.pure);
-                        this.s_mugs[m].y += 0.5;
-                    }
-                    else if (this.s_mugs[m].x < 40) {
-                        remove_transform = remove_transform.times(Mat4.translation(0.5, 0, 0));
-                        this.shapes.mug_body.draw(context, program_state, remove_transform, shadow_pass ? this.materials.mug_body : this.materials.pure);
-                        this.s_mugs[m].x += 0.5;
-                    }
-                    else {
-                        this.s_mugs[m].colliding = false;
-                        this.s_mugs[m].collision = true;
-                    }
-                }
-                else if (!this.s_mugs[m].collision)
-                    this.shapes.mug_body.draw(context, program_state, s_mugs_transform, shadow_pass ? this.materials.mug_body : this.materials.pure);
-
-                s_mugs_transform = s_mugs_transform.times(Mat4.translation(2.5, 0, 0));
-                m += 1;
-            }
-            s_mugs_transform = s_mugs_transform.times(Mat4.translation(-2.5 * (i + 0.5), 0, -2.5));
-        }
-
-
-        // player 1 marshmallow
-        this.marshmallow_scale = Mat4.identity().times(Mat4.scale(1, 1, 1.9)).times(Mat4.translation(0, 0, 20));
-        this.shapes.marshmallow.draw(context, program_state, this.marshmallow_scale, shadow_pass ? this.materials.marsh : this.materials.pure);
-
-        // player 2 marshmallow
-        this.s_marshmallow_scale = Mat4.identity().times(Mat4.scale(1, 1, 1.9)).times(Mat4.translation(0, 0, -20));
-        this.shapes.s_marshmallow.draw(context, program_state, this.s_marshmallow_scale, shadow_pass ? this.materials.marsh : this.materials.pure);
-        this.s_marshmallow_scale = this.s_marshmallow_scale.times(Mat4.rotation(Math.PI, 0, 1, 0));
-
-        // current player view
-        if (this.attached) {
-            if (this.attached() == this.marshmallow_scale) {
-                const blending_factor = 0.05;
-                const desired = this.attached().times(Mat4.translation(0, 3, 9));
-                const current = desired.map((x, i) =>
-                    Vector.from(program_state.camera_transform[i]).mix(x, blending_factor));
-                program_state.set_camera(Mat4.inverse(current));
-            }
-            else if (this.attached() == this.s_marshmallow_scale) {
-                const blending_factor = 0.05;
-                let desired = this.attached().times(Mat4.translation(0, 3, 9));
-                let current = desired.map((x, i) =>
-                    Vector.from(program_state.camera_transform[i]).mix(x, blending_factor));
-                program_state.set_camera(Mat4.inverse(current));
-            }
-        }
-
-    }
-
     initialize_marshmallow() {
         // Initialize variables related to marshmallow and projectile
         this.bodies = [];
@@ -448,19 +327,19 @@ export class MarshmallowMadness extends Simulation {
 
         // If shot was fired, update velocity and position of marshmallow
         // If marshmallow has collision, reset marshmallow position & power
-        
+
         if (this.shot_fired) {
 
             let z_vel = -this.current_velocity * Math.cos(this.vertical_angle);
             let y_vel = this.current_velocity * Math.sin(this.vertical_angle);
             let x_vel = this.current_velocity * Math.cos(this.horizontal_angle);
-            
+
             this.current_velocity = Math.pow(
                 Math.pow(z_vel, 2) + Math.pow(y_vel, 2),
                 0.5
             );
             this.vertical_angle = Math.atan(y_vel / -z_vel);
-            
+
             for (let b of this.bodies) {
                 if (!this.shot_fired_last) {
                     b.linear_velocity[2] = z_vel;
@@ -472,14 +351,14 @@ export class MarshmallowMadness extends Simulation {
 
                 // If about to fall through floor, reverse y velocity:
                 // TODO: collision logic and switch camera angles / player
-                
+
                 // Table bounds
                 // x:  -20 < x < 20
                 // y: > -9
                 // z: -40 < z < 40
 
                 if (Math.abs(b.center[0]) < 20 && Math.abs(b.center[2]) < 40) {
-                    if (b.center[1] < -9  && b.linear_velocity[1] < 0) {
+                    if (b.center[1] < -9 && b.linear_velocity[1] < 0) {
                         b.linear_velocity[1] *= -.8;
                         this.bounce += 1;
                         console.log(this.bounce);
@@ -500,7 +379,6 @@ export class MarshmallowMadness extends Simulation {
 
         this.shot_fired_last = this.shot_fired;
     }
-
 
     render_scene(context, program_state, shadow_pass, draw_light_source = false, draw_shadow = false) {
         // shadow_pass: true if this is the second pass that draw the shadow.
@@ -528,7 +406,7 @@ export class MarshmallowMadness extends Simulation {
         this.shapes.table.draw(context, program_state, table_scale, shadow_pass ? this.materials.floor : this.materials.pure);
 
         //cup arrangements
-        let mugs_transform = Mat4.identity().times(Mat4.translation(0, -7, -20)).times(Mat4.rotation(Math.PI, 0, -1, 0));
+        let mugs_transform = Mat4.identity().times(Mat4.translation(0, -7.7, -20)).times(Mat4.rotation(Math.PI, 0, -1, 0));
         mugs_transform = mugs_transform.times(Mat4.scale(2, 2, 2));
 
         let m = 0;
@@ -561,7 +439,7 @@ export class MarshmallowMadness extends Simulation {
         }
 
         // player 2 mugs
-        let s_mugs_transform = Mat4.identity().times(Mat4.translation(0, -7, 20)).times(Mat4.rotation(Math.PI, 0, -1, 0));
+        let s_mugs_transform = Mat4.identity().times(Mat4.translation(0, -7.7, 20)).times(Mat4.rotation(Math.PI, 0, -1, 0));
         s_mugs_transform = s_mugs_transform.times(Mat4.scale(2, 2, 2));
 
         m = 0;
@@ -748,9 +626,9 @@ export class MarshmallowMadness extends Simulation {
 
         // axis 
         let axis_transform = Mat4.identity().times(Mat4.translation(20, -9, 40));
-        this.shapes.box.draw(context, program_state, axis_transform.times(Mat4.scale(10, .1, .1)), this.materials.marsh.override({color: color(1, 0, 0, 1)}));
-        this.shapes.box.draw(context, program_state, axis_transform.times(Mat4.scale(.1, 10, .1)), this.materials.marsh.override({color: color(0, 1, 0, 1)}));
-        this.shapes.box.draw(context, program_state, axis_transform.times(Mat4.scale(.1, .1, 10)), this.materials.marsh.override({color: color(0, 0, 1, 1)}));
+        this.shapes.box.draw(context, program_state, axis_transform.times(Mat4.scale(10, .1, .1)), this.materials.marsh.override({ color: color(1, 0, 0, 1) }));
+        this.shapes.box.draw(context, program_state, axis_transform.times(Mat4.scale(.1, 10, .1)), this.materials.marsh.override({ color: color(0, 1, 0, 1) }));
+        this.shapes.box.draw(context, program_state, axis_transform.times(Mat4.scale(.1, .1, 10)), this.materials.marsh.override({ color: color(0, 0, 1, 1) }));
 
         //marshmallow
         //         let marshmallow_scale = Mat4.identity().times(Mat4.scale(1, 1, 1.9)).times(Mat4.translation(0, 0, 20));
