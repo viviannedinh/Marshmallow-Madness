@@ -85,7 +85,7 @@ export class MarshmallowMadness extends Simulation {
             info_strings_image: new Material(new defs.Textured_Phong(1),
                 {
                     ambient: 1,
-                    iffusivity: 0,
+                    diffusivity: 0,
                     specularity: 0,
                     texture: new Texture("assets/text.png")
                 }),
@@ -112,7 +112,7 @@ export class MarshmallowMadness extends Simulation {
         this.players = []
 
         var p1 = {};
-        p1.camera = Mat4.look_at(vec3(0, 9, -20), vec3(0, 10, 0), vec3(0, 1, 0)).times(Mat4.rotation(Math.PI, 0, 1, 0));
+        p1.camera = Mat4.look_at(vec3(0, 10, 70), vec3(0, -10, 0), vec3(0, 1, 0));
         p1.mugs = [];
         for (let i = 0; i < 10; i++) {
             var a = {};
@@ -147,7 +147,11 @@ export class MarshmallowMadness extends Simulation {
 
         this.initial_camera_location = Mat4.look_at(vec3(0, 10, 70), vec3(0, -10, 0), vec3(0, 1, 0));
 
+        this.target_camera_location = Mat4.look_at(vec3(0, 10, -70), vec3(0, -10, 0), vec3(0, 1, 0));
+
         this.init_ok = false;
+
+        this.counter = 0;
     }
 
     make_control_panel() {
@@ -171,14 +175,14 @@ export class MarshmallowMadness extends Simulation {
         this.new_line();
         this.key_triggered_button("Aim left", ["j"], () => {
             if (this.shot_fired != true && this.horizontal_angle < Math.PI) {
-                this.horizontal_angle += 0.5 / 180 * Math.PI;
+                this.horizontal_angle += (this.current_player == 0 ? 1 : -1) * 0.5 / 180 * Math.PI;
                 this.initialize_info_strings();
             }
         });
         this.new_line();
         this.key_triggered_button("Aim right", ["l"], () => {
             if (this.shot_fired != true && this.horizontal_angle > 0) {
-                this.horizontal_angle -= 0.5 / 180 * Math.PI;
+                this.horizontal_angle -= (this.current_player == 0 ? 1 : -1) * 0.5 / 180 * Math.PI;
                 this.initialize_info_strings();
             }
         });
@@ -279,15 +283,15 @@ export class MarshmallowMadness extends Simulation {
         this.vertical_angle = Math.PI / 3; // angle above -z axis (on yz plane)
         this.horizontal_angle = Math.PI / 2; // angle right of -z axis (on xz plane)
         this.bounce = 0;
+        this.counter = 1;
         this.current_player = this.current_player == 1 ? 0 : 1;
-        console.log(this.current_player);
     }
 
     initialize_info_strings() {
         // Reset info string array to contain up to date values
         this.info_strings = [
             `Power: ${this.current_velocity}`,
-            `Horizontal angle: ${((this.horizontal_angle / Math.PI * 180)- 90).toFixed(2) }`,
+            `Horizontal angle: ${((this.horizontal_angle / Math.PI * 180) - 90).toFixed(2)}`,
             `Vertical angle: ${(this.vertical_angle / Math.PI * 180).toFixed(2)}`,
         ]
     }
@@ -297,7 +301,7 @@ export class MarshmallowMadness extends Simulation {
         // scene should do to its bodies every frame -- including applying forces.
         // Generate additional moving bodies if there ever aren't enough:
 
-        while (this.bodies.length < 1) {
+        while (this.bodies.length < 1 && this.counter == 0) {
             let start = this.current_player == 0 ? 50 : -50;
             this.bodies.push(
                 new Body(
@@ -310,6 +314,7 @@ export class MarshmallowMadness extends Simulation {
                     0,
                 )
             )
+            this.counter = -1;
         }
 
         // If shot was fired, update velocity and position of marshmallow
@@ -440,7 +445,7 @@ export class MarshmallowMadness extends Simulation {
 
         let height_offset = -6.9;
 
-        
+
         //cup arrangements
         let mugs_transform = Mat4.scale(1, 1, 1).times(Mat4.translation(0, height_offset, -20)).times(Mat4.rotation(Math.PI, 0, -1, 0));
         mugs_transform = mugs_transform.times(Mat4.scale(4, 2, 4));
@@ -519,16 +524,10 @@ export class MarshmallowMadness extends Simulation {
             s_mugs_transform = s_mugs_transform.times(Mat4.translation(-step * (i + 0.5), 0, -step));
         }
 
-        
+
         for (let b of this.bodies)
             b.shape.draw(context, program_state, b.drawn_location, shadow_pass ? b.material : this.materials.pure);
 
-        // current player view
-        // const blending_factor = 0.05;
-        // let desired = this.players[this.current_player].camera;
-        // desired = Mat4.inverse(desired);
-        // desired = desired.map((x,i) => Vector.from(program_state.camera_inverse[i]).mix(x, 0.1));
-        // program_state.set_camera(desired);
 
     }
 
@@ -551,6 +550,7 @@ export class MarshmallowMadness extends Simulation {
     }
 
     display(context, program_state) {
+        console.log(this.counter);
         // display(): advance the time and state of our whole simulation.
         if (program_state.animate)
             this.simulate(program_state.animation_delta_time);
@@ -565,6 +565,20 @@ export class MarshmallowMadness extends Simulation {
             program_state.set_camera(this.initial_camera_location);
         }
 
+        if (this.counter >= 1) {
+            this.counter += 1;
+        } if (this.counter > 50) {
+            this.counter = 0;
+        }
+
+        // current player view
+        if (this.counter == -1) {
+            const blending_factor = 0.05;
+            let desired = this.players[this.current_player].camera;
+            // desired = Mat4.inverse(desired);
+            desired = desired.map((x, i) => Vector.from(program_state.camera_inverse[i]).mix(x, 0.1));
+            program_state.set_camera(desired);
+        }
         program_state.projection_transform = Mat4.perspective(
             Math.PI / 4, context.width / context.height, .1, 1000);
 
@@ -595,6 +609,7 @@ export class MarshmallowMadness extends Simulation {
             0.667 + Math.sin(tt/350)/1.5 ,
             1
         );
+
 
         // This is a rough target of the light.
         // Although the light is point light, we need a target to set the POV of the light
@@ -631,5 +646,8 @@ export class MarshmallowMadness extends Simulation {
         this.render_scene(context, program_state, true, true, true);
 
         this.update_info_strings(context, program_state);
+
+
+
     }
 }
