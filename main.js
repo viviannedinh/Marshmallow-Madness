@@ -19,7 +19,6 @@ export class MarshmallowMadness extends Simulation {
         // At the beginning of our program, load one of each of these shape definitions onto the GPU.
         this.shapes = {
             box: new defs.Cube(),
-            mug_body_old: new defs.Single_Capped_Cylinder(15, 15, [[0, 1], [0, 1]]),
             mug_body: new Shape_From_File("assets/cup.obj"),
             cup: new defs.Capped_Cylinder(30, 30),
             marshmallow: new defs.Rounded_Capped_Cylinder(10, 10),
@@ -31,14 +30,6 @@ export class MarshmallowMadness extends Simulation {
 
         // *** Materials
         this.materials = {
-            mug_bod_old: new Material(new defs.Textured_Phong(1),
-                {
-                    ambient: .7,
-                    diffusivity: .5,
-                    specularity: 0.5,
-                    color: hex_color('#fc6d87'),
-                    // texture: new Texture("assets/peppermint.jpeg")
-                }),
             marshmallow: new Material(new defs.Phong_Shader(),
                 {
                     ambient: .5,
@@ -49,6 +40,7 @@ export class MarshmallowMadness extends Simulation {
                 {
                     ambient: .5,
                     diffusivity: 1,
+                    specularity: 0.5,
                     color: hex_color("#ffffff"),
                     light_depth_texture: null
                 }),
@@ -63,11 +55,12 @@ export class MarshmallowMadness extends Simulation {
                 }),
             floor: new Material(new Shadow_Textured_Phong_Shader(1),
                 {
+                    color: color(0.5, 0.5, 0.5, 1),
                     ambient: .5,
                     diffusivity: 0.6,
                     specularity: 0.8,
                     smoothness: 0.8,
-                    color_texture: new Texture("assets/woodsigned2.jpeg"),
+                    // color_texture: new Texture("assets/woodsigned2.jpeg"),
                     light_depth_texture: null
                 }),
             pure: new Material(new Color_Phong_Shader(), {
@@ -218,6 +211,7 @@ export class MarshmallowMadness extends Simulation {
         // Bind it to TinyGraphics
         this.light_depth_texture = new Buffered_Texture(this.lightDepthTexture);
         this.materials.mug_body.light_depth_texture = this.light_depth_texture
+        this.materials.marsh.light_depth_texture = this.light_depth_texture
         this.materials.floor.light_depth_texture = this.light_depth_texture
 
         this.lightDepthTextureSize = LIGHT_DEPTH_TEX_SIZE;
@@ -313,7 +307,7 @@ export class MarshmallowMadness extends Simulation {
             this.bodies.push(
                 new Body(
                     this.shapes.marshmallow,
-                    this.materials.marshmallow,
+                    this.materials.marsh,
                     vec3(1, 1, 1.9)
                 ).emplace(
                     Mat4.translation(...vec3(0, 0, start)),
@@ -437,7 +431,7 @@ export class MarshmallowMadness extends Simulation {
 
         if (draw_light_source && shadow_pass) {
             this.shapes.sphere.draw(context, program_state,
-                Mat4.translation(light_position[0], light_position[1], light_position[2]).times(Mat4.scale(2, 2, 2)),
+                Mat4.translation(0, light_position[1], 0).times(Mat4.scale(4, 4, 4)),
                 this.materials.light_src.override({ color: light_color })
             );
         }
@@ -451,6 +445,7 @@ export class MarshmallowMadness extends Simulation {
 
         let height_offset = -6.9;
 
+        
         //cup arrangements
         let mugs_transform = Mat4.scale(1, 1, 1).times(Mat4.translation(0, height_offset, -20)).times(Mat4.rotation(Math.PI, 0, -1, 0));
         mugs_transform = mugs_transform.times(Mat4.scale(4, 2, 4));
@@ -529,6 +524,10 @@ export class MarshmallowMadness extends Simulation {
             s_mugs_transform = s_mugs_transform.times(Mat4.translation(-step * (i + 0.5), 0, -step));
         }
 
+        
+        for (let b of this.bodies)
+            b.shape.draw(context, program_state, b.drawn_location, shadow_pass ? b.material : this.materials.pure);
+
         // current player view
         // const blending_factor = 0.05;
         // let desired = this.players[this.current_player].camera;
@@ -562,8 +561,6 @@ export class MarshmallowMadness extends Simulation {
             this.simulate(program_state.animation_delta_time);
 
         // Draw each shape at its current location:
-        for (let b of this.bodies)
-            b.shape.draw(context, program_state, b.drawn_location, b.material);
 
         // display():  Called once per frame of animation.
         // Setup -- This part sets up the scene's overall camera matrix, projection matrix, and lights:
@@ -595,7 +592,7 @@ export class MarshmallowMadness extends Simulation {
         }
 
         // Light Setup
-        this.light_position = vec4(10, 30, 10, 1);
+        this.light_position = vec4(0, 30, 0, 1);
 
         this.light_color = color(0.9, 0.9, 0.9, 1);
 
@@ -610,7 +607,7 @@ export class MarshmallowMadness extends Simulation {
         const light_view_mat = Mat4.look_at(
             vec3(this.light_position[0], this.light_position[1], this.light_position[2]),
             vec3(this.light_view_target[0], this.light_view_target[1], this.light_view_target[2]),
-            vec3(0, 1, 0), // assume the light to target will have a up dir of +y, maybe need to change according to your case
+            vec3(1, 0, 0), // assume the light to target will have a up dir of +y, maybe need to change according to your case
         );
         const light_proj_mat = Mat4.perspective(this.light_field_of_view, 1, 5, 500);
         // Bind the Depth Texture Buffer
