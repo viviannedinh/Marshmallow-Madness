@@ -44,7 +44,7 @@ export class MarshmallowMadness extends Simulation {
                     ambient: .4,
                     diffusivity: .5,
                     specularity: .5,
-                     color_texture: new Texture("assets/peppermint.jpeg"),
+                    color_texture: new Texture("assets/peppermint.jpeg"),
                     light_depth_texture: null
                 }),
             floor: new Material(new Shadow_Textured_Phong_Shader(1),
@@ -54,7 +54,7 @@ export class MarshmallowMadness extends Simulation {
                     diffusivity: 0.6,
                     specularity: 0.4,
                     smoothness: 64,
-                     color_texture: new Texture("assets/woodsigned2.jpeg"),
+                    color_texture: new Texture("assets/woodsigned2.jpeg"),
                     light_depth_texture: null
                 }),
             pure: new Material(new Color_Phong_Shader(), {
@@ -66,7 +66,7 @@ export class MarshmallowMadness extends Simulation {
                     diffusivity: 0.6,
                     specularity: 0.4,
                     color_texture: new Texture("assets/discoball.jpeg"),
-                    light_depth_texture:null
+                    light_depth_texture: null
                 }),
             depth_tex: new Material(new Depth_Texture_Shader_2D(),
                 {
@@ -368,7 +368,6 @@ export class MarshmallowMadness extends Simulation {
                                 mindex = mug.num;
                             }
                         }
-                        // console.log(min)
 
                         // If near cups and below lip:
                         if (min < 3. && b.center[1] < -5) {
@@ -550,7 +549,6 @@ export class MarshmallowMadness extends Simulation {
     }
 
     display(context, program_state) {
-        console.log(this.counter);
         // display(): advance the time and state of our whole simulation.
         if (program_state.animate)
             this.simulate(program_state.animation_delta_time);
@@ -584,7 +582,7 @@ export class MarshmallowMadness extends Simulation {
 
         const t = program_state.animation_time / 1000, dt = program_state.animation_delta_time / 1000;
         const tt = program_state.animation_time;
-      
+
 
         // GL INIT
         const gl = context.context;
@@ -600,13 +598,13 @@ export class MarshmallowMadness extends Simulation {
         }
 
         // Light Setup
-         this.light_position = Mat4.rotation(tt/1500, 0, 1, 0).times(vec4(-40, 10, 0, 1));
+        this.light_position = Mat4.rotation(tt / 1500, 0, 1, 0).times(vec4(-40, 10, 0, 1));
 
-      
+
         this.light_color = color(
-            0.667 + Math.sin(tt/50)/1.5 ,
-            0.667 + Math.sin(tt/150)/1.5 ,
-            0.667 + Math.sin(tt/350)/1.5 ,
+            0.667 + Math.sin(tt / 50) / 1.5,
+            0.667 + Math.sin(tt / 150) / 1.5,
+            0.667 + Math.sin(tt / 350) / 1.5,
             1
         );
 
