@@ -30,12 +30,6 @@ export class MarshmallowMadness extends Simulation {
 
         // *** Materials
         this.materials = {
-            marshmallow: new Material(new defs.Phong_Shader(),
-                {
-                    ambient: .5,
-                    diffusivity: 1,
-                    color: hex_color("#ffffff")
-                }),
             marsh: new Material(new Shadow_Textured_Phong_Shader(1),
                 {
                     ambient: .5,
@@ -50,17 +44,17 @@ export class MarshmallowMadness extends Simulation {
                     ambient: .4,
                     diffusivity: .5,
                     specularity: .5,
-                    // color_texture: new Texture("assets/peppermint.jpeg"),
+                     color_texture: new Texture("assets/peppermint.jpeg"),
                     light_depth_texture: null
                 }),
             floor: new Material(new Shadow_Textured_Phong_Shader(1),
                 {
                     color: color(0.5, 0.5, 0.5, 1),
-                    ambient: .5,
+                    ambient: .3,
                     diffusivity: 0.6,
-                    specularity: 0.8,
-                    smoothness: 0.8,
-                    // color_texture: new Texture("assets/woodsigned2.jpeg"),
+                    specularity: 0.4,
+                    smoothness: 64,
+                     color_texture: new Texture("assets/woodsigned2.jpeg"),
                     light_depth_texture: null
                 }),
             pure: new Material(new Color_Phong_Shader(), {
@@ -72,6 +66,7 @@ export class MarshmallowMadness extends Simulation {
                     diffusivity: 0.6,
                     specularity: 0.4,
                     color_texture: new Texture("assets/discoball.jpeg"),
+                    light_depth_texture:null
                 }),
             depth_tex: new Material(new Depth_Texture_Shader_2D(),
                 {
@@ -210,9 +205,9 @@ export class MarshmallowMadness extends Simulation {
         this.lightDepthTexture = gl.createTexture();
         // Bind it to TinyGraphics
         this.light_depth_texture = new Buffered_Texture(this.lightDepthTexture);
-        this.materials.mug_body.light_depth_texture = this.light_depth_texture
-        this.materials.marsh.light_depth_texture = this.light_depth_texture
-        this.materials.floor.light_depth_texture = this.light_depth_texture
+        this.materials.mug_body.light_depth_texture = this.light_depth_texture;
+        this.materials.marsh.light_depth_texture = this.light_depth_texture;
+        this.materials.floor.light_depth_texture = this.light_depth_texture;
 
         this.lightDepthTextureSize = LIGHT_DEPTH_TEX_SIZE;
         gl.bindTexture(gl.TEXTURE_2D, this.lightDepthTexture);
@@ -431,7 +426,7 @@ export class MarshmallowMadness extends Simulation {
 
         if (draw_light_source && shadow_pass) {
             this.shapes.sphere.draw(context, program_state,
-                Mat4.translation(0, light_position[1], 0).times(Mat4.scale(4, 4, 4)),
+                Mat4.translation(light_position[0], light_position[1], light_position[2]).times(Mat4.scale(4, 4, 4)),
                 this.materials.light_src.override({ color: light_color })
             );
         }
@@ -574,9 +569,8 @@ export class MarshmallowMadness extends Simulation {
             Math.PI / 4, context.width / context.height, .1, 1000);
 
         const t = program_state.animation_time / 1000, dt = program_state.animation_delta_time / 1000;
-
-        //alex: const light_position = vec4(0, 0, 5, 1);
-        const light_position = vec4(10, 10, 10, 1);
+        const tt = program_state.animation_time;
+      
 
         // GL INIT
         const gl = context.context;
@@ -592,24 +586,31 @@ export class MarshmallowMadness extends Simulation {
         }
 
         // Light Setup
-        this.light_position = vec4(0, 30, 0, 1);
+         this.light_position = Mat4.rotation(tt/1500, 0, 1, 0).times(vec4(-40, 10, 0, 1));
 
-        this.light_color = color(0.9, 0.9, 0.9, 1);
+      
+        this.light_color = color(
+            0.667 + Math.sin(tt/50)/1.5 ,
+            0.667 + Math.sin(tt/150)/1.5 ,
+            0.667 + Math.sin(tt/350)/1.5 ,
+            1
+        );
 
         // This is a rough target of the light.
         // Although the light is point light, we need a target to set the POV of the light
         this.light_view_target = vec4(0, 0, 0, 1);
         this.light_field_of_view = 130 * Math.PI / 180; // 130 degree
 
-        program_state.lights = [new Light(vec4(0, 50, 0, 1), this.light_color, 100000)];
+        program_state.lights = [new Light(this.light_position, this.light_color, 1000)];
 
         // Step 1: set the perspective and camera to the POV of light
         const light_view_mat = Mat4.look_at(
             vec3(this.light_position[0], this.light_position[1], this.light_position[2]),
             vec3(this.light_view_target[0], this.light_view_target[1], this.light_view_target[2]),
-            vec3(1, 0, 0), // assume the light to target will have a up dir of +y, maybe need to change according to your case
+            vec3(0, 1, 0), // assume the light to target will have a up dir of +y, maybe need to change according to your case
         );
         const light_proj_mat = Mat4.perspective(this.light_field_of_view, 1, 5, 500);
+
         // Bind the Depth Texture Buffer
         gl.bindFramebuffer(gl.FRAMEBUFFER, this.lightDepthFramebuffer);
         gl.viewport(0, 0, this.lightDepthTextureSize, this.lightDepthTextureSize);
