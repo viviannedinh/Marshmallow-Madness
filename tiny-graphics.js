@@ -1328,8 +1328,8 @@ const Webgl_Manager = tiny.Webgl_Manager =
             // attributes.  Both are needed because the attributes on a canvas ave a special effect
             // on buffers, separate from their style.
             const [width, height] = dimensions;
-            this.canvas.style["width"] = width + "px";
-            this.canvas.style["height"] = height + "px";
+            this.canvas.style["width"] = "96vh";
+            this.canvas.style["height"] = "54vh";
             Object.assign(this, {width, height});
             Object.assign(this.canvas, {width, height});
             // Build the canvas's matrix for converting -1 to 1 ranged coords (NCDS) into its own pixel coords:

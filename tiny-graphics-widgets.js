@@ -28,8 +28,8 @@ const Canvas_Widget = widgets.Canvas_Widget =
                 Object.assign(options, initial_scenes[0].widget_options);
             Object.assign(this, defaults, options)
 
-            const rules = [".canvas-widget { width: 1080px; background: White; margin:auto }",
-                ".canvas-widget canvas { width: 1080px; height: 600px; margin-bottom:-3px }"];
+            const rules = [".canvas-widget { width: 100vw; background: White; margin:auto }",
+                ".canvas-widget canvas { width: 100vw; height: 100vh; margin-bottom:-3px }"];
 
             if (document.styleSheets.length == 0) document.head.appendChild(document.createElement("style"));
             for (const r of rules) document.styleSheets[document.styleSheets.length - 1].insertRule(r, 0)
